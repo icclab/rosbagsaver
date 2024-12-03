@@ -22,14 +22,15 @@ class ProcessListenerNode(Node):
         key = "process_trigger"
         print(f"Declaring Listener on '{key}'...")
         pub = zenoh_session.declare_subscriber(key, self.listener)
+       
+        # Track the subprocess for ros2 bag recording
+        self.rosbag_process = None
+        self.bag_name = "my_bag"  # Define the bag name
+
         
         print("Press CTRL-C to quit...")
         while True:
             time.sleep(1)
-
-        # Track the subprocess for ros2 bag recording
-        self.rosbag_process = None
-        self.bag_name = "my_bag"  # Define the bag name
 
     def listener(self, sample: zenoh.Sample):
         print(
