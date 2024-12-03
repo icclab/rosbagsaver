@@ -37,7 +37,8 @@ class ProcessListenerNode(Node):
 
     #    bag_name = f"rosbag_{datetime.now().strftime('%Y%m%d_%H%M%S')}.mcap"
         bag_name = f"{self.bag_name}"
-        bag_path = os.path.join(os.getcwd(), bag_name)
+      #  bag_path = os.path.join(os.getcwd(), bag_name)
+        bag_path = "/pod-data"
         self.get_logger().info(f"Starting ros2 bag record to save as {bag_name}")
 
         try:
