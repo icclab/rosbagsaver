@@ -11,6 +11,9 @@ import json
 class ProcessListenerNode(Node):
     def __init__(self):
         super().__init__('process_listener')
+        # Track the subprocess for ros2 bag recording
+        self.rosbag_process = None
+        self.bag_name = "my_bag"  # Define the bag name
         config = zenoh.Config()
         config.insert_json5("mode", json.dumps("client"))
         router_url = "tcp/160.85.253.140:30447"
@@ -23,9 +26,6 @@ class ProcessListenerNode(Node):
         print(f"Declaring Listener on '{key}'...")
         pub = zenoh_session.declare_subscriber(key, self.listener)
        
-        # Track the subprocess for ros2 bag recording
-        self.rosbag_process = None
-        self.bag_name = "my_bag"  # Define the bag name
 
         
         print("Press CTRL-C to quit...")
