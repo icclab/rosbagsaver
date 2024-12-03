@@ -4,30 +4,44 @@ from std_msgs.msg import String
 import subprocess
 import os
 from datetime import datetime
+import zenoh
+import time
+import json
 
 class ProcessListenerNode(Node):
     def __init__(self):
         super().__init__('process_listener')
-        self.subscription = self.create_subscription(
-            String,
-            'process_trigger',
-            self.listener_callback,
-            10
-        )
-        self.subscription  # prevent unused variable warning
+        config = zenoh.Config()
+        config.insert_json5("mode", json.dumps("client"))
+        router_url = "tcp/160.85.253.140:30447"
+        config.insert_json5("connect/endpoints", json.dumps([router_url]))
+        print("Opening Zenoh session...")
+        zenoh_session = zenoh.open(config)
+        zenoh.init_log_from_env_or("error")
+    
+        key = "process_trigger"
+        print(f"Declaring Listener on '{key}'...")
+        pub = zenoh_session.declare_subscriber(key, self.listener)
+        
+        print("Press CTRL-C to quit...")
+        while True:
+            time.sleep(1)
 
         # Track the subprocess for ros2 bag recording
         self.rosbag_process = None
         self.bag_name = "my_bag"  # Define the bag name
 
-    def listener_callback(self, msg):
-        self.get_logger().info(f"Received message: {msg.data}")
-        if msg.data.lower() == "start":
+    def listener(self, sample: zenoh.Sample):
+        print(
+                f">> [Subscriber] Received {sample.kind} ('{sample.key_expr}': '{sample.payload.to_string()}')"
+            )
+        self.get_logger().info(f"Received message: {sample.payload.to_string()}")
+        if sample.payload.to_string() == "start":
             self.start_rosbag_recording()
-        elif msg.data.lower() == "stop":
+        elif sample.payload.to_string() == "stop":
             self.stop_rosbag_recording()
         else:
-            self.get_logger().warn(f"Unknown command: {msg.data}")
+            self.get_logger().warn(f"Unknown command: {sample.payload.to_string()}")
 
     def start_rosbag_recording(self):
         """Start rosbag recording in MCAP format if not already running."""
@@ -43,7 +57,7 @@ class ProcessListenerNode(Node):
 
         try:
             self.rosbag_process = subprocess.Popen(
-                ['ros2', 'bag', 'record', '-o', bag_path, '--storage', 'mcap', '-d', '30', '-a'],
+                ['ros2', 'bag', 'record', '-o', '/pod-data/rosbag', '--storage', 'mcap', '-a'],
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE
             )
