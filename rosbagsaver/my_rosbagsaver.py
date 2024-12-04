@@ -84,17 +84,18 @@ class ProcessListenerNode(Node):
 
 def main(args=None):
     import sys
-    if len(sys.argv) != 4:
-        print("Usage: python script.py <key> <bag_name> <router_url>")
+    if len(sys.argv) != 5:
+        print("Usage: python script.py <key> <bag_name> <router_url> <topic_reg_expr>")
         return
 
     key = sys.argv[1]
     bag_name = sys.argv[2]
     router_url = sys.argv[3]
+    regex_pattern = sys.argv[4]
 
-    print(f"Initializing with key='{key}', bag_name='{bag_name}', and router_url='{router_url}'")
+    print(f"Initializing with key='{key}', bag_name='{bag_name}',  router_url='{router_url}', and regex_pattern='{regex_pattern}'")
     rclpy.init(args=args)
-    node = ProcessListenerNode(key, bag_name, router_url)
+    node = ProcessListenerNode(key, bag_name, router_url, regex_pattern)
     try:
         rclpy.spin(node)
     except KeyboardInterrupt:
