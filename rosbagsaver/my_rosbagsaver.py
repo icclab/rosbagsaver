@@ -13,6 +13,7 @@ class ProcessListenerNode(Node):
         super().__init__('process_listener')
         self.rosbag_process = None
         self.bag_name = bag_name
+        self.regex_pattern =  regex_pattern
 
         # Zenoh configuration
         config = zenoh.Config()
