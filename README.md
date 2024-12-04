@@ -1,4 +1,5 @@
 # rosbagsaver
+This node listens to a given Zenoh topic and starts/stops a rosbag save process in Python. It assumes you have container with the Zenoh package and the ros2-dds Zenoh plugin.
 
 After building and sourcing the package you can run it with:
 
