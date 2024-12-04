@@ -47,13 +47,14 @@ class ProcessListenerNode(Node):
             self.get_logger().warn("Rosbag recording is already running.")
             return
 
-        bag_name = self.bag_name
-        bag_path = '/pod-data/my_rosbag'
-        self.get_logger().info(f"Starting ros2 bag record to save as {bag_name}")
+        
+        # Dynamically set the bag path
+        bag_path = os.path.join('/pod-data/', self.bag_name)
+        self.get_logger().info(f"Starting ros2 bag record to save as {bag_path}")
 
         try:
             self.rosbag_process = subprocess.Popen(
-                ['ros2', 'bag', 'record', '-o', '/pod-data/rosbag', '--storage', 'mcap', '-a'],
+                ['ros2', 'bag', 'record', '-o', bag_path, '--storage', 'mcap', '-a'],
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE
             )
@@ -61,6 +62,8 @@ class ProcessListenerNode(Node):
         except Exception as e:
             self.get_logger().error(f"Failed to start recording: {str(e)}")
             self.rosbag_process = None
+
+
 
     def stop_rosbag_recording(self):
         """Stop rosbag recording if it's running."""
