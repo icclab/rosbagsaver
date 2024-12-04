@@ -9,7 +9,7 @@ import json
 
 
 class ProcessListenerNode(Node):
-    def __init__(self, key, bag_name, router_url):
+    def __init__(self, key, bag_name, router_url, regex_pattern):
         super().__init__('process_listener')
         self.rosbag_process = None
         self.bag_name = bag_name
@@ -54,7 +54,7 @@ class ProcessListenerNode(Node):
 
         try:
             self.rosbag_process = subprocess.Popen(
-                ['ros2', 'bag', 'record', '-o', bag_path, '--storage', 'mcap', '-a'],
+                ['ros2', 'bag', 'record', '-o', bag_path, '--storage', 'mcap', '-e', regex_pattern],
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE
             )
