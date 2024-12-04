@@ -3,39 +3,36 @@ from rclpy.node import Node
 from std_msgs.msg import String
 import subprocess
 import os
-from datetime import datetime
 import zenoh
 import time
 import json
 
+
 class ProcessListenerNode(Node):
-    def __init__(self):
+    def __init__(self, key, bag_name, router_url):
         super().__init__('process_listener')
-        # Track the subprocess for ros2 bag recording
         self.rosbag_process = None
-        self.bag_name = "my_bag"  # Define the bag name
+        self.bag_name = bag_name
+
+        # Zenoh configuration
         config = zenoh.Config()
         config.insert_json5("mode", json.dumps("client"))
-        router_url = "tcp/160.85.253.140:30447"
         config.insert_json5("connect/endpoints", json.dumps([router_url]))
         print("Opening Zenoh session...")
         zenoh_session = zenoh.open(config)
         zenoh.init_log_from_env_or("error")
-    
-        key = "process_trigger"
-        print(f"Declaring Listener on '{key}'...")
-        pub = zenoh_session.declare_subscriber(key, self.listener)
-       
 
-        
+        print(f"Declaring Listener on '{key}'...")
+        zenoh_session.declare_subscriber(key, self.listener)
+
         print("Press CTRL-C to quit...")
         while True:
             time.sleep(1)
 
     def listener(self, sample: zenoh.Sample):
         print(
-                f">> [Subscriber] Received {sample.kind} ('{sample.key_expr}': '{sample.payload.to_string()}')"
-            )
+            f">> [Subscriber] Received {sample.kind} ('{sample.key_expr}': '{sample.payload.to_string()}')"
+        )
         self.get_logger().info(f"Received message: {sample.payload.to_string()}")
         if sample.payload.to_string() == "start":
             self.start_rosbag_recording()
@@ -50,9 +47,7 @@ class ProcessListenerNode(Node):
             self.get_logger().warn("Rosbag recording is already running.")
             return
 
-    #    bag_name = f"rosbag_{datetime.now().strftime('%Y%m%d_%H%M%S')}.mcap"
-        bag_name = f"{self.bag_name}"
-      #  bag_path = os.path.join(os.getcwd(), bag_name)
+        bag_name = self.bag_name
         bag_path = '/pod-data/my_rosbag'
         self.get_logger().info(f"Starting ros2 bag record to save as {bag_name}")
 
@@ -85,9 +80,18 @@ class ProcessListenerNode(Node):
 
 
 def main(args=None):
-    print('my rosbagsaver')
+    import sys
+    if len(sys.argv) != 4:
+        print("Usage: python script.py <key> <bag_name> <router_url>")
+        return
+
+    key = sys.argv[1]
+    bag_name = sys.argv[2]
+    router_url = sys.argv[3]
+
+    print(f"Initializing with key='{key}', bag_name='{bag_name}', and router_url='{router_url}'")
     rclpy.init(args=args)
-    node = ProcessListenerNode()
+    node = ProcessListenerNode(key, bag_name, router_url)
     try:
         rclpy.spin(node)
     except KeyboardInterrupt:
@@ -97,6 +101,6 @@ def main(args=None):
         node.destroy_node()
         rclpy.shutdown()
 
+
 if __name__ == '__main__':
     main()
-
