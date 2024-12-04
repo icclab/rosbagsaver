@@ -54,7 +54,7 @@ class ProcessListenerNode(Node):
 
         try:
             self.rosbag_process = subprocess.Popen(
-                ['ros2', 'bag', 'record', '-o', bag_path, '--storage', 'mcap', '-e', regex_pattern],
+                ['ros2', 'bag', 'record', '-o', bag_path, '--storage', 'mcap', '-e', self.regex_pattern],
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE
             )
