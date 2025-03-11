@@ -9,11 +9,12 @@ import json
 
 
 class ProcessListenerNode(Node):
-    def __init__(self, key, bag_name, router_url, regex_pattern):
+    def __init__(self, key, bag_name, router_url, regex_pattern, max_bag_size):
         super().__init__('process_listener')
         self.rosbag_process = None
         self.bag_name = bag_name
         self.regex_pattern =  regex_pattern
+        self.max_bag_size = max_bag_size
 
         # Zenoh configuration
         config = zenoh.Config()
@@ -55,7 +56,7 @@ class ProcessListenerNode(Node):
 
         try:
             self.rosbag_process = subprocess.Popen(
-                ['ros2', 'bag', 'record', '-o', bag_path, '--storage', 'mcap', '-e', self.regex_pattern, '-b', max_bag_size],
+                ['ros2', 'bag', 'record', '-o', bag_path, '--storage', 'mcap', '-e', self.regex_pattern, '-b', self.max_bag_size],
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE
             )
