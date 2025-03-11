@@ -55,7 +55,7 @@ class ProcessListenerNode(Node):
 
         try:
             self.rosbag_process = subprocess.Popen(
-                ['ros2', 'bag', 'record', '-o', bag_path, '--storage', 'mcap', '-e', self.regex_pattern],
+                ['ros2', 'bag', 'record', '-o', bag_path, '--storage', 'mcap', '-e', self.regex_pattern, '-b', max_bag_size],
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE
             )
@@ -85,18 +85,19 @@ class ProcessListenerNode(Node):
 
 def main(args=None):
     import sys
-    if len(sys.argv) != 5:
-        print("Usage: python script.py <key> <bag_name> <router_url> <topic_reg_expr>")
+    if len(sys.argv) != 6:
+        print("Usage: python script.py <key> <bag_name> <router_url> <topic_reg_expr> <max_bag_size>")
         return
 
     key = sys.argv[1]
     bag_name = sys.argv[2]
     router_url = sys.argv[3]
     regex_pattern = sys.argv[4]
+    max_bag_size = sys.argv[5]
 
-    print(f"Initializing with key='{key}', bag_name='{bag_name}',  router_url='{router_url}', and regex_pattern='{regex_pattern}'")
+    print(f"Initializing with key='{key}', bag_name='{bag_name}',  router_url='{router_url}', max_bag_size='{max_bag_size}', and regex_pattern='{regex_pattern}'")
     rclpy.init(args=args)
-    node = ProcessListenerNode(key, bag_name, router_url, regex_pattern)
+    node = ProcessListenerNode(key, bag_name, router_url, regex_pattern, max_bag_size)
     try:
         rclpy.spin(node)
     except KeyboardInterrupt:
