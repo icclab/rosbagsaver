@@ -87,8 +87,15 @@ class ProcessListenerNode(Node):
 
         self.get_logger().info("Stopping ros2 bag recording...")
         try:
-            self.rosbag_process.terminate()  # Send SIGTERM to the process
-            self.rosbag_process.wait()  # Wait for process to terminate
+          #  self.rosbag_process.terminate()  # Send SIGTERM to the process
+          #  self.rosbag_process.wait()  # Wait for process to terminate
+
+            self.rosbag_process.send_signal(signal.SIGINT)  # Simulate Ctrl+C
+            self.rosbag_process.wait(timeout=5)  # Give it time to shut down
+
+                if self.rosbag_process.poll() is None:  # If still running
+                    self.get_logger().warn("Process did not exit with SIGINT, forcing termination...")
+                    self.rosbag_process.kill()  # Force kill
             self.get_logger().info("Recording stopped.")
         except Exception as e:
             self.get_logger().error(f"Failed to stop recording: {str(e)}")
