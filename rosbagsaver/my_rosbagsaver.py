@@ -51,12 +51,24 @@ class ProcessListenerNode(Node):
 
         
         # Dynamically set the bag path
-        bag_path = os.path.join('/pod-data/', self.bag_name)
+        #bag_path = os.path.join('/pod-data/', self.bag_name)
+       # self.get_logger().info(f"Starting ros2 bag record to save as {bag_path}")
+
+        # Base path for the rosbag
+        base_bag_path = os.path.join('/pod-data/', self.bag_name)
+    
+        # Ensure unique bag path
+        bag_path = base_bag_path
+        counter = 1
+        while os.path.exists(bag_path):
+            bag_path = f"{base_bag_path}_{counter}"
+            counter += 1
+
         self.get_logger().info(f"Starting ros2 bag record to save as {bag_path}")
 
         try:
             self.rosbag_process = subprocess.Popen(
-                ['ros2', 'bag', 'record', '-o', bag_path, '--storage', 'mcap', '-e', self.regex_pattern, '-b', self.max_bag_size],
+                ['ros2', 'bag', 'record', '-o', bag_path, '--storage', 'mcap', '-e', self.regex_pattern, '-b', str(self.max_bag_size)],
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE
             )
