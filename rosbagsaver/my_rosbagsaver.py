@@ -6,6 +6,7 @@ import os
 import zenoh
 import time
 import json
+import signal
 
 
 class ProcessListenerNode(Node):
